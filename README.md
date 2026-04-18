@@ -25,13 +25,25 @@ This app needs:
 - HTTPS or localhost
 - internet access to load the Three.js ES modules from CDN
 
+## GitHub Pages
+
+This app is easy to deploy on GitHub Pages because it is just static files.
+
+1. Push this folder to a GitHub repository.
+2. Enable Pages from the repository settings.
+3. Serve from the main branch root or `/docs`.
+4. Open the Pages URL on an Android phone in Chrome.
+
+GitHub Pages already gives you HTTPS, so the main remaining requirement is a browser/device with immersive WebXR AR support.
+
 ## Best test setup
 
 1. Serve this folder over HTTPS or through a localhost tunnel.
 2. Open it on a supported Android phone in Chrome.
 3. Tap `Enter AR`.
 4. Scan the table until a placement reticle appears.
-5. Tap to place the battlefield, then tap again to shoot.
+5. Tap to place the battlefield.
+6. Hold the on-screen draw button to stretch the bow, then release to shoot.
 
 ## Notes
 

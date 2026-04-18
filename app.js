@@ -4,14 +4,14 @@ import { ARButton } from "https://cdn.jsdelivr.net/npm/three@0.164.1/examples/js
 const ROUND_DURATION = 30;
 const STORAGE_KEY = "food-archery-ar-leaderboard";
 const FOOD_SET = [
-  { emoji: "🍕", type: "normal", points: 10, color: "#ff8f3f" },
-  { emoji: "🍔", type: "normal", points: 10, color: "#f7aa42" },
-  { emoji: "🍩", type: "normal", points: 10, color: "#e58ccf" },
-  { emoji: "🌮", type: "normal", points: 10, color: "#ffbf69" },
-  { emoji: "🍟", type: "normal", points: 10, color: "#ff5f44" },
-  { emoji: "🥤", type: "normal", points: 10, color: "#6ac6ff" },
-  { emoji: "🍔", type: "special", points: 50, color: "#ffe066", label: "Golden Burger" },
-  { emoji: "🔥", type: "bad", points: -10, color: "#ff655f", label: "Burnt Food" },
+  { kind: "apple", type: "normal", points: 10, color: "#ee5f45", label: "Apple" },
+  { kind: "orange", type: "normal", points: 10, color: "#ff9f1c", label: "Orange" },
+  { kind: "banana", type: "normal", points: 10, color: "#ffd166", label: "Banana" },
+  { kind: "watermelon", type: "normal", points: 10, color: "#ff6b6b", label: "Watermelon" },
+  { kind: "pineapple", type: "normal", points: 10, color: "#f4b942", label: "Pineapple" },
+  { kind: "strawberry", type: "normal", points: 10, color: "#ff4d6d", label: "Strawberry" },
+  { kind: "golden-apple", type: "special", points: 50, color: "#ffe066", label: "Golden Fruit" },
+  { kind: "burnt", type: "bad", points: -10, color: "#ff655f", label: "Burnt Fruit" },
 ];
 
 const rewardProfiles = {
@@ -91,6 +91,11 @@ const ui = {
   tableLabel: document.getElementById("table-label"),
   playAgain: document.getElementById("play-again"),
   endSession: document.getElementById("end-session"),
+  archeryControls: document.getElementById("archery-controls"),
+  bowWidget: document.getElementById("bow-widget"),
+  bowString: document.getElementById("bow-string"),
+  arrowShaft: document.getElementById("arrow-shaft"),
+  drawButton: document.getElementById("draw-button"),
 };
 
 const state = {
@@ -114,6 +119,9 @@ const state = {
   localSpace: null,
   hitTestRequested: false,
   session: null,
+  drawing: false,
+  drawStart: 0,
+  charge: 0,
 };
 
 let scene;
@@ -206,7 +214,163 @@ function createBattlefield() {
   state.battlefield.add(placementGlow);
 }
 
-function makeLabelTexture(emoji, color) {
+function drawApple(ctx, color) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(98, 140, 42, 0, Math.PI * 2);
+  ctx.arc(156, 140, 42, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillRect(96, 118, 62, 52);
+  ctx.fillStyle = "#6f3d24";
+  ctx.fillRect(121, 54, 10, 34);
+  ctx.fillStyle = "#62a85d";
+  ctx.beginPath();
+  ctx.ellipse(150, 72, 26, 14, -0.45, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawOrange(ctx, color) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(128, 132, 58, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = "rgba(255,255,255,0.2)";
+  ctx.lineWidth = 3;
+  for (let index = 0; index < 6; index += 1) {
+    ctx.beginPath();
+    ctx.moveTo(128, 132);
+    const angle = (Math.PI * 2 * index) / 6;
+    ctx.lineTo(128 + Math.cos(angle) * 52, 132 + Math.sin(angle) * 52);
+    ctx.stroke();
+  }
+  ctx.fillStyle = "#6ebf63";
+  ctx.beginPath();
+  ctx.ellipse(128, 70, 20, 10, 0.1, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawBanana(ctx, color) {
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 26;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.arc(126, 126, 58, 0.3, 2.5, true);
+  ctx.stroke();
+  ctx.strokeStyle = "#d3aa2f";
+  ctx.lineWidth = 10;
+  ctx.beginPath();
+  ctx.arc(126, 126, 58, 0.32, 2.48, true);
+  ctx.stroke();
+}
+
+function drawWatermelon(ctx, color) {
+  ctx.fillStyle = "#4caf50";
+  ctx.beginPath();
+  ctx.arc(128, 148, 64, Math.PI, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#fff6e8";
+  ctx.beginPath();
+  ctx.arc(128, 148, 54, Math.PI, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(128, 148, 46, Math.PI, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#2c1a14";
+  [92, 112, 128, 146, 164].forEach((x) => {
+    ctx.beginPath();
+    ctx.ellipse(x, 132, 4, 7, 0.3, 0, Math.PI * 2);
+    ctx.fill();
+  });
+}
+
+function drawPineapple(ctx, color) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.ellipse(128, 146, 44, 56, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = "#b27a19";
+  ctx.lineWidth = 4;
+  for (let offset = -42; offset <= 42; offset += 16) {
+    ctx.beginPath();
+    ctx.moveTo(84 + Math.max(0, offset), 102 - Math.min(0, offset));
+    ctx.lineTo(172 + Math.min(0, offset), 190 + Math.max(0, offset));
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(84 + Math.max(0, offset), 190 + Math.min(0, offset));
+    ctx.lineTo(172 + Math.min(0, offset), 102 - Math.max(0, offset));
+    ctx.stroke();
+  }
+  ctx.fillStyle = "#4f9e46";
+  [[128, 52], [110, 68], [146, 68], [96, 86], [160, 86]].forEach(([x, y]) => {
+    ctx.beginPath();
+    ctx.moveTo(128, 96);
+    ctx.lineTo(x, y);
+    ctx.lineTo(x + (x < 128 ? -8 : 8), y + 24);
+    ctx.closePath();
+    ctx.fill();
+  });
+}
+
+function drawStrawberry(ctx, color) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(128, 76);
+  ctx.bezierCurveTo(184, 84, 190, 156, 128, 194);
+  ctx.bezierCurveTo(66, 156, 72, 84, 128, 76);
+  ctx.fill();
+  ctx.fillStyle = "#59a857";
+  for (let index = 0; index < 6; index += 1) {
+    const angle = -0.9 + index * 0.36;
+    ctx.beginPath();
+    ctx.moveTo(128, 88);
+    ctx.lineTo(128 + Math.cos(angle) * 34, 62 + Math.sin(angle) * 16);
+    ctx.lineTo(128 + Math.cos(angle + 0.22) * 20, 98 + Math.sin(angle) * 8);
+    ctx.closePath();
+    ctx.fill();
+  }
+  ctx.fillStyle = "#ffd166";
+  [[108, 114], [128, 108], [146, 118], [98, 136], [120, 138], [142, 144], [110, 160], [132, 164], [150, 160]].forEach(([x, y]) => {
+    ctx.beginPath();
+    ctx.ellipse(x, y, 3, 5, 0.2, 0, Math.PI * 2);
+    ctx.fill();
+  });
+}
+
+function drawGoldenApple(ctx, color) {
+  drawApple(ctx, color);
+  ctx.strokeStyle = "#fff5b1";
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.arc(128, 136, 64, 0, Math.PI * 2);
+  ctx.stroke();
+}
+
+function drawBurnt(ctx) {
+  ctx.fillStyle = "#2b1f1b";
+  ctx.beginPath();
+  ctx.arc(128, 132, 56, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = "#5a463d";
+  ctx.lineWidth = 4;
+  for (let index = 0; index < 7; index += 1) {
+    ctx.beginPath();
+    ctx.moveTo(86 + index * 10, 92);
+    ctx.lineTo(98 + index * 11, 176);
+    ctx.stroke();
+  }
+  ctx.strokeStyle = "#ff7b00";
+  ctx.lineWidth = 8;
+  ctx.beginPath();
+  ctx.moveTo(108, 70);
+  ctx.lineTo(120, 48);
+  ctx.lineTo(132, 76);
+  ctx.lineTo(144, 42);
+  ctx.lineTo(154, 72);
+  ctx.stroke();
+}
+
+function makeLabelTexture(kind, color) {
   const canvas = document.createElement("canvas");
   canvas.width = 256;
   canvas.height = 256;
@@ -218,15 +382,36 @@ function makeLabelTexture(emoji, color) {
   ctx.lineWidth = 8;
   ctx.strokeStyle = color;
   ctx.stroke();
-  ctx.font = "128px serif";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(emoji, 128, 134);
+  switch (kind) {
+    case "apple":
+      drawApple(ctx, color);
+      break;
+    case "orange":
+      drawOrange(ctx, color);
+      break;
+    case "banana":
+      drawBanana(ctx, color);
+      break;
+    case "watermelon":
+      drawWatermelon(ctx, color);
+      break;
+    case "pineapple":
+      drawPineapple(ctx, color);
+      break;
+    case "strawberry":
+      drawStrawberry(ctx, color);
+      break;
+    case "golden-apple":
+      drawGoldenApple(ctx, color);
+      break;
+    default:
+      drawBurnt(ctx);
+  }
   return new THREE.CanvasTexture(canvas);
 }
 
 function createTarget(definition) {
-  const texture = makeLabelTexture(definition.emoji, definition.color);
+  const texture = makeLabelTexture(definition.kind, definition.color);
   const material = new THREE.SpriteMaterial({ map: texture, transparent: true });
   const sprite = new THREE.Sprite(material);
   sprite.scale.set(0.11, 0.11, 0.11);
@@ -238,6 +423,7 @@ function createTarget(definition) {
     orbitSpeed: 0.7 + Math.random() * 0.8,
     orbitAngle: Math.random() * Math.PI * 2,
     baseHeight: 0.11 + Math.random() * 0.07,
+    label: definition.label,
   };
   state.battlefield.add(sprite);
   state.targets.push(sprite);
@@ -332,7 +518,7 @@ function beginRound() {
   resetRound();
   populateTargets();
   state.running = true;
-  setStatus("Round live.", "Keep the center reticle over a target and tap the screen to shoot.");
+  setStatus("Round live.", "Hold the draw button to stretch the bow, then release to fire through the center reticle.");
   window.clearInterval(timerHandle);
   timerHandle = window.setInterval(() => {
     if (!state.running) return;
@@ -353,9 +539,9 @@ function finishRound() {
   ui.resultsHeading.textContent = state.score >= 150 ? "Dessert-tier accuracy." : state.score >= 100 ? "High-value round." : state.score >= 50 ? "Reward unlocked." : "Round complete.";
   ui.resultsSummary.textContent =
     state.score >= 150
-      ? "Excellent control. The round stayed skillful without becoming tiring in a restaurant setting."
+      ? "Excellent control. The bow-draw interaction feels more physical while still staying quick enough for a restaurant table."
       : state.score >= 100
-        ? "Strong result. The guided AR loop feels fast enough for replay and meaningful enough for upsell."
+        ? "Strong result. The guided AR loop feels tactile, replayable, and still meaningful for upsell."
         : state.score >= 50
           ? "Nice balance. Guests can feel progress quickly and still want another shot."
           : "The session stayed short and understandable, but there is room to improve accuracy.";
@@ -411,9 +597,9 @@ function scoreTarget(target) {
     state.hits += 1;
     if (type === "special") {
       state.goldenHit = true;
-      setStatus("Golden Burger hit.", "Special reward trigger secured.");
+      setStatus("Golden fruit hit.", "Special reward trigger secured.");
     } else {
-      setStatus("Clean hit.", "Keep the center ring steady and chain the next target.");
+      setStatus(`${target.userData.label} hit.`, "Keep the center ring steady and chain the next target.");
     }
 
     let total = points;
@@ -442,6 +628,7 @@ function shoot() {
   if (!state.running || !state.placed) return;
 
   state.shots += 1;
+  releaseBowVisual();
   const xrCamera = renderer.xr.getCamera(camera);
   raycaster.setFromCamera(new THREE.Vector2(0, 0), xrCamera);
   const hits = raycaster.intersectObjects(state.targets, false);
@@ -476,6 +663,52 @@ function shoot() {
     updateHud();
     setStatus("Missed shot.", "Let the floating food drift closer to the center before tapping.");
   }
+}
+
+function updateBowVisual() {
+  const clamped = Math.max(0, Math.min(1, state.charge));
+  ui.bowWidget.style.setProperty("--charge-level", clamped.toFixed(2));
+  if (clamped > 0.02) {
+    ui.bowWidget.classList.add("drawing");
+  } else {
+    ui.bowWidget.classList.remove("drawing");
+  }
+}
+
+function releaseBowVisual() {
+  ui.bowWidget.classList.remove("drawing");
+  ui.bowWidget.classList.remove("firing");
+  void ui.bowWidget.offsetWidth;
+  ui.bowWidget.classList.add("firing");
+  ui.bowWidget.style.setProperty("--charge-level", "0");
+  state.charge = 0;
+  window.setTimeout(() => {
+    ui.bowWidget.classList.remove("firing");
+  }, 260);
+}
+
+function updateDrawCharge() {
+  if (!state.drawing) return;
+  const elapsed = performance.now() - state.drawStart;
+  state.charge = Math.min(elapsed / 650, 1);
+  updateBowVisual();
+  window.requestAnimationFrame(updateDrawCharge);
+}
+
+function startDraw() {
+  if (!state.running || !state.placed || state.drawing) return;
+  state.drawing = true;
+  state.drawStart = performance.now();
+  state.charge = 0.01;
+  updateBowVisual();
+  updateDrawCharge();
+  setStatus("Bow drawn.", "Release the button to shoot with a stretched bow feel.");
+}
+
+function endDraw() {
+  if (!state.drawing) return;
+  state.drawing = false;
+  shoot();
 }
 
 function placeBattlefield() {
@@ -525,6 +758,7 @@ async function requestHitTestSource(session) {
     ui.resultsSheet.classList.add("hidden");
     ui.introCard.classList.remove("hidden");
     document.body.classList.remove("xr-active");
+    ui.bowWidget.style.setProperty("--charge-level", "0");
     setStatus("Scan the table to find a surface.", "Move the phone slowly. Once the reticle appears, tap to place the battlefield.");
   });
 }
@@ -650,6 +884,19 @@ function initEvents() {
     if (session) {
       session.end();
     }
+  });
+
+  ui.drawButton.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    ui.drawButton.setPointerCapture(event.pointerId);
+    startDraw();
+  });
+
+  ["pointerup", "pointercancel", "lostpointercapture", "pointerleave"].forEach((eventName) => {
+    ui.drawButton.addEventListener(eventName, (event) => {
+      event.preventDefault();
+      endDraw();
+    });
   });
 
   window.addEventListener("resize", () => {
