@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Food Archery AR</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="background-glow"></div>
+
+  <main class="shell">
+    <section class="intro-card" id="intro-card">
+      <div class="chip-row">
+        <span class="chip">Full WebXR AR</span>
+        <span class="chip subtle">Tabletop placement + real hit testing</span>
+      </div>
+      <h1>Food Archery AR</h1>
+      <p class="lead">
+        Scan the table, place the battlefield in real space, then tap to shoot floating food targets
+        anchored directly into the restaurant scene.
+      </p>
+
+      <div class="two-col">
+        <article class="info-card">
+          <h2>How it works</h2>
+          <p>1. Enter AR on a supported phone.</p>
+          <p>2. Move the device gently until the reticle locks on a table.</p>
+          <p>3. Tap once to place the battlefield, then keep aiming from the center and tap to fire.</p>
+        </article>
+        <article class="info-card">
+          <h2>Why this version is real AR</h2>
+          <p>The game uses an immersive AR session with hit-test based plane placement and world-anchored targets instead of a fake camera backdrop.</p>
+        </article>
+      </div>
+
+      <div class="setup-card">
+        <div class="field-group">
+          <label for="player-name">Player name</label>
+          <input id="player-name" type="text" maxlength="18" placeholder="Guest Archer">
+        </div>
+        <div class="field-group">
+          <label for="table-number">Table</label>
+          <input id="table-number" type="text" maxlength="8" placeholder="5">
+        </div>
+        <div class="field-group">
+          <label for="reward-profile">Reward mode</label>
+          <select id="reward-profile">
+            <option value="standard">Standard upsell</option>
+            <option value="family">Family-friendly</option>
+            <option value="premium">Premium dining</option>
+          </select>
+        </div>
+        <button id="start-ar" class="primary-button">Enter AR</button>
+        <p id="support-note" class="support-note">
+          Requires HTTPS or localhost plus a WebXR-capable browser such as Chrome on supported Android devices.
+        </p>
+      </div>
+
+      <div class="reward-card">
+        <h2>Reward ladder</h2>
+        <ul id="reward-list">
+          <li><strong>0-49:</strong> Thanks for playing</li>
+          <li><strong>50-99:</strong> Free dip or add-on</li>
+          <li><strong>100-149:</strong> Drink unlock on bills above Rs 500</li>
+          <li><strong>150+:</strong> Dessert unlock on bills above Rs 750</li>
+          <li><strong>Golden hit:</strong> Surprise garlic bread voucher</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="overlay-ui hidden" id="overlay-ui">
+      <header class="hud">
+        <div class="hud-block">
+          <span class="hud-label">Player</span>
+          <strong id="hud-player">Guest Archer</strong>
+        </div>
+        <div class="hud-block">
+          <span class="hud-label">Time</span>
+          <strong id="hud-timer">30</strong>
+        </div>
+        <div class="hud-block">
+          <span class="hud-label">Score</span>
+          <strong id="hud-score">0</strong>
+        </div>
+        <div class="hud-block">
+          <span class="hud-label">Combo</span>
+          <strong id="hud-combo">x0</strong>
+        </div>
+      </header>
+
+      <div class="center-crosshair" aria-hidden="true">
+        <span></span>
+        <span></span>
+      </div>
+
+      <div class="status-card">
+        <p id="status-line">Scan the table to find a surface.</p>
+        <p id="detail-line">Move the phone slowly. Once the reticle appears, tap to place the battlefield.</p>
+      </div>
+
+      <div class="bottom-sheet hidden" id="results-sheet">
+        <span class="chip">Round complete</span>
+        <h2 id="results-heading">Round complete</h2>
+        <p id="results-summary"></p>
+        <div class="stats-grid">
+          <div>
+            <span class="hud-label">Final score</span>
+            <strong id="final-score">0</strong>
+          </div>
+          <div>
+            <span class="hud-label">Accuracy</span>
+            <strong id="final-accuracy">0%</strong>
+          </div>
+          <div>
+            <span class="hud-label">Best combo</span>
+            <strong id="final-combo">x0</strong>
+          </div>
+        </div>
+        <div class="reward-banner" id="reward-banner">No reward this round.</div>
+        <div class="leaderboard-card">
+          <div class="leaderboard-head">
+            <h3>Top Scores Today</h3>
+            <span id="table-label">Table 5</span>
+          </div>
+          <ol id="leaderboard-list"></ol>
+        </div>
+        <div class="action-row">
+          <button id="play-again" class="primary-button">Play again</button>
+          <button id="end-session" class="secondary-button">End AR session</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
